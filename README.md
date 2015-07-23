@@ -1,4 +1,4 @@
-*README to run_analysis.r*
+##README to run_analysis.r##
 
 COURSERA-Getting and Cleaning Data Course Project
 Name: Christoph Thommen
