@@ -24,7 +24,7 @@
 pathR="getdata-projectfiles-UCI HAR Dataset/UCI HAR Dataset/"
 
 #import of test data set (measurements, subjects and activities)
-x_test=read.table(paste(pathR2,"test/X_test.txt",sep=""),sep="\t")
+x_test=read.table(paste(pathR,"test/X_test.txt",sep=""),sep="\t")
 y_test=read.table(paste(pathR,"test/y_test.txt",sep=""),sep="\t")
 subject_test=read.table(paste(pathR,"test/subject_test.txt",sep=""),sep="\t")
 
@@ -66,9 +66,15 @@ data=rbind(test_data,train_data)
 
 #TASK 2:Extract only the measurements on the mean and standard deviation for each measurement. 
 features=unlist(features)
+
+#the variable names which contain the word "mean" or "std" get stored
 temp1=features[agrep("mean",features)]
 temp2=features[agrep("std",features)]
 mean_std_list=features[features %in% c(temp1,temp2)]
+
+#the first three columns (subject_nr, activity_nr and activity are added to
+#the columns with the variables stored as the mean_std_list (which contain
+#all variables which gives information on the mean and the standard deviation)
 data_mean_std=cbind(data[,1:3],data[,mean_std_list])
 
 ##########################################
@@ -87,8 +93,11 @@ mean_std_list=gsub("Gravity", "Gravity_", mean_std_list)
 mean_std_list=gsub("Jerk", "Jerk_", mean_std_list)
 mean_std_list=gsub("()-","",mean_std_list)
 
+#to get rid of the numbers in the variable names, the character strings are split
 temp3=strsplit(mean_std_list, " ")
 temp4=unlist(temp3)
+
+#only the variable names, which are actually used are stored, the numbers (with a character length>4) are removed
 variable_names=temp4[nchar(temp4)>4]
 
 #TASK 4: Appropriately label the data set with descriptive variable names. 
@@ -101,9 +110,14 @@ dimnames(data_mean_std)[[2]]=c("subject_nr","activity_nr","activity",variable_na
 #TASK 5:From the data set in step 4, create a second, independent tidy data set with the 
 #   average of each variable for each activity and each subject.
 
+#a new variable which contains information on the subject and acitivity to facilitate the aggregation in the next step
 data_mean_std$subject_activity=paste(data_mean_std$subject_nr,data_mean_std$activity,sep="")
 
+#the data is aggregated, as the mean for all variables and for each subject/activity-combination is taken.
 aggregate_data=aggregate(data_mean_std[,c(1,2,4:89)],by=list(data_mean_std$subject_activity),mean)
+
+#to make the tidy data set looking nicer the variable which describes subject and activity is removed and
+#insted, the variables to the subject and the activity are added as separate variables
 final_data_temp=merge(aggregate_data,activity_labels[,2:3],by="activity_nr",all.x=T)
 final_data=final_data_temp[,c(90,3:89)]
 dimnames(final_data)[[2]]=c("activity","subject_nr",variable_names)
